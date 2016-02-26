@@ -1,44 +1,29 @@
 EventStore = require './eventStore'
+Repository = require './repository'
 
-extend = (prototype, attrs) ->
-  object = Object.create prototype
-  Object.keys(attrs).forEach (key) -> object[key] = attrs[key]
-  object
+Todo = (attrs) ->
+  id = attrs.id
+  delete attrs.id
+  state =
+    description: null
+    completed: false
 
-TodoState =
-  id: null
-  description: null
-  completed: false
-
-Todo =
-  state: {}
-
-  complete: ->
-    Object.assign @state, { completed: true}
-    name: 'TodoCompleted', payload: Object.assign {}, @state
-Object.freeze Todo
-
-TodoFactory = (state) ->
-  todo = Object.create Todo
-  todo.state = Object.assign todo.state, TodoState, state
+  state = Object.assign state, attrs
+  todo = Object.defineProperties {}, {
+    complete:
+      value: ->
+        state.completed = true
+        id: id, name: 'TodoCompleted', payload: state
+  }
+  todo.state = state
+  todo.id = id
   todo
-
-Repository =
-  add: (state) ->
-    todo = @factory state
-    @eventStore.add name: 'TodoCreated', payload: todo.state
-    @cache[todo.state.id] = todo
-    todo
-Object.freeze Repository
 
 runner = ->
   TodoEventStore = EventStore()
 
-  TodoRepository = extend Repository, {
-    initialize: (@eventStore, @factory) -> @cache = {}
-  }
-  TodoRepository.initialize TodoEventStore, TodoFactory
+  TodoRepository = Repository 'Todo', Todo, TodoEventStore
   todo1 = TodoRepository.add id: 'todo1', description: 'build it'
   todo1.complete()
 
-module.exports = {runner, TodoFactory, Repository}
+module.exports = {runner, Todo}
