@@ -10,21 +10,21 @@ test "Core methods of Repository cannot be changed", (t) ->
   t.false repository.load is 'foo'
   t.end()
 
-test "Repository::add creates an aggregate from and adds the create event to the event store", (t) ->
-  t.plan 2
+test "Repository::add creates an aggregate from passed attributes and returns the create event", (t) ->
+  t.plan 1
 
   createdEvent =
     name: 'FooCreatedEvent'
     aggregateId: 'foo1'
     payload: {}
-  store = add: (event) -> t.deepEquals event, createdEvent, "event published is as expected"
+  store = add: new Function()
   Foo = (state) -> state
 
   repository = Repository('Foo', Foo, store)
 
-  foo = repository.add id: 'foo1'
+  result = repository.add id: 'foo1'
 
-  t.is foo.id, 'foo1'
+  t.deepEquals result, createdEvent, "event published is as expected"
   t.end()
 
 test "Repository::load with an existing id returns the aggregate", (t) ->
@@ -33,9 +33,9 @@ test "Repository::load with an existing id returns the aggregate", (t) ->
 
   repository = Repository('Foo', Foo, store)
 
-  foo1 = repository.add id: 'foo1'
+  {aggregateId} = repository.add id: 'foo1'
 
-  t.equal repository.load('foo1'), foo1
+  t.equals repository.load('foo1').id, aggregateId
   t.end()
 
 test "Repository::load with a non-existent id returns null", (t) ->

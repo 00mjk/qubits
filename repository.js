@@ -6,11 +6,10 @@ module.exports = function(aggregateName, Aggregate, eventStore) {
   properties = {
     add: {
       value: function(state) {
-        var agg = Aggregate(state)
+        var agg = Aggregate(Object.assign({}, state))
         cache[agg.id] = agg
         payload = agg.state || {}
-        eventStore.add(Event({ name: aggregateName + "CreatedEvent", aggregateId: agg.id, payload: payload}))
-        return agg
+        return Event({ name: aggregateName + "CreatedEvent", aggregateId: agg.id, payload: payload })
       }
     },
     load: {

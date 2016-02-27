@@ -1,7 +1,8 @@
-module.exports = ({commands, commandHandlers}) ->
+module.exports = ({eventStore, commands, commandHandlers}) ->
   properties =
     dispatch:
       value: (command) ->
-        commandHandlers[command.name]?(command.message)
+        events = commandHandlers[command.name]?(command.message)
+        eventStore.add events if events?
 
   Object.defineProperties {}, properties
