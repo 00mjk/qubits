@@ -1,6 +1,6 @@
 EventStore = require './eventStore'
 Repository = require './repository'
-System = require './system'
+Flow = require './flow'
 Event = require './event'
 
 Todo = (attrs) ->
@@ -35,9 +35,9 @@ runner = ->
       todo = TodoRepository.load id
       todo.complete()
 
-  TodoSystem = System commands: TodoCommands, commandHandlers: TodoCommandHandlers
+  TodoFlow = Flow commands: TodoCommands, commandHandlers: TodoCommandHandlers
 
-  TodoSystem.dispatch TodoCommands.CreateTodo id: 'todo1', description: 'Write tests.'
-  TodoSystem.dispatch TodoCommands.MarkAsCompleted id: 'todo1'
+  TodoFlow.dispatch TodoCommands.CreateTodo id: 'todo1', description: 'Write tests.'
+  TodoFlow.dispatch TodoCommands.MarkAsCompleted id: 'todo1'
 
 module.exports = {runner, Todo}

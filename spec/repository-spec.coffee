@@ -4,8 +4,10 @@ Repository = require '../repository'
 test "Core methods of Repository cannot be changed", (t) ->
   repository = Repository()
   repository.add = 'foo'
+  repository.load = 'foo'
 
   t.false repository.add is 'foo'
+  t.false repository.load is 'foo'
   t.end()
 
 test "Repository::add creates an aggregate from and adds the create event to the event store", (t) ->
@@ -34,4 +36,13 @@ test "Repository::load with an existing id returns the aggregate", (t) ->
   foo1 = repository.add id: 'foo1'
 
   t.equal repository.load('foo1'), foo1
+  t.end()
+
+test "Repository::load with a non-existent id returns null", (t) ->
+  Foo = (state) -> state
+  store = add: ->
+
+  repository = Repository('Foo', Foo, store)
+
+  t.equal repository.load('foo1'), null
   t.end()

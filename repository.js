@@ -15,7 +15,7 @@ module.exports = function(aggregateName, Aggregate, eventStore) {
     },
     load: {
       value: function(id) {
-        return cache[id]
+        return cache[id] || null
       }
     }
   }
