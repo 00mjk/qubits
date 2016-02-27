@@ -6,10 +6,11 @@
   "main": " ",
   "devDependencies": {
     "should": "^8.2.2",
-    "tape": "^4.4.0"
+    "tape": "^4.4.0",
+    "coffeetape": "^1.0.1"
   },
   "scripts": {
-    "test": "coffee spec/*.coffee | faucet"
+    "test": "coffeetape 'spec/*.coffee' | faucet"
   },
   "keywords": [
     "cqrs"
