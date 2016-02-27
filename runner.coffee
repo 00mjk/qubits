@@ -1,4 +1,5 @@
 EventStore = require './eventStore'
+EventBus = require './eventBus'
 Repository = require './repository'
 Flow = require './flow'
 Event = require './event'
@@ -34,8 +35,18 @@ TodoCommandHandlers =
     todo = TodoRepository.load id
     todo.complete()
 
+TodoEventBus = EventBus()
+TodoEventBus.registerListeners
+  TodoCreatedEvent: [
+    (event) -> console.log event
+  ]
+  TodoCompletedEvent: [
+    (event) -> console.log event
+  ]
+
 TodoFlow = Flow
   eventStore: TodoEventStore
+  eventBus: TodoEventBus
   commands: TodoCommands
   commandHandlers: TodoCommandHandlers
 

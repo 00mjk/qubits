@@ -1,16 +1,24 @@
-listeners = {}
-events = []
+module.exports = ->
+  listeners = {}
 
-bus =
-  registerListener: (eventName, listener) ->
+  registerListener = (eventName, listener) ->
     listenersForEvent = listeners[eventName]
     if listenersForEvent is undefined
       listeners[eventName] = [listener]
     else
       listenersForEvent.push listener
 
-  publish: (event) ->
-    events.push event
-    listeners[event.name]?.forEach?(listener -> listener.handle(event))
+  registerListeners = (mapping) ->
+    for event, ls of mapping
+      ls.forEach (listener) -> registerListener event, listener
 
-module.exports = bus
+  properties =
+    registerListeners:
+      value: registerListeners
+    registerListener:
+      value: registerListener
+    publish:
+      value: (event) ->
+        listeners[event.name]?.forEach (listener) -> listener(event)
+
+  Object.defineProperties {}, properties

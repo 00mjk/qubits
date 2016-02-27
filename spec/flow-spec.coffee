@@ -27,18 +27,19 @@ test "Flow with commands and command handlers, will correctly map them", (t) ->
 
   t.end()
 
-test "Flow puts newly created events from commands into the EventStore", (t) ->
-  t.plan 1
+test "Flow puts newly created events from commands into the EventStore and EventBus", (t) ->
+  t.plan 2
 
   AddedEvent = Event aggregateId: 'foo', name: 'AddedEvent', payload: {}
   EventStore = add: (event) -> t.equal event, AddedEvent, "EventStore::add was called with the event"
+  EventBus = publish: (event) -> t.equal event, AddedEvent, "EventBus::publish was called with the event"
 
   Commands =
     Add: -> name: 'Add', message: {}
   Handlers =
     Add: -> AddedEvent
 
-  flow = Flow(eventStore: EventStore, commands: Commands, commandHandlers: Handlers)
+  flow = Flow(eventStore: EventStore, eventBus: EventBus, commands: Commands, commandHandlers: Handlers)
 
   flow.dispatch Commands.Add()
 
