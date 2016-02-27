@@ -13,8 +13,8 @@ test "Repository::add creates an aggregate from and adds the create event to the
 
   createdEvent =
     name: 'FooCreatedEvent'
-    payload:
-      id: 'foo1'
+    aggregateId: 'foo1'
+    payload: {}
   store = add: (event) -> t.deepEquals createdEvent, event
   Foo = (state) -> state
 

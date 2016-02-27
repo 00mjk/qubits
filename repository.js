@@ -6,7 +6,7 @@ module.exports = function(aggregateName, Aggregate, eventStore) {
       value: function(state) {
         var agg = Aggregate(state)
         cache[agg.id] = agg
-        eventStore.add({ name: aggregateName + "CreatedEvent", id: agg.id, payload: agg.state })
+        eventStore.add({ name: aggregateName + "CreatedEvent", aggregateId: agg.id, payload: agg.state })
         return agg
       }
     }

@@ -13,7 +13,7 @@ Todo = (attrs) ->
     complete:
       value: ->
         state.completed = true
-        id: id, name: 'TodoCompleted', payload: state
+        aggregateId: id, name: 'TodoCompleted', payload: state
   }
   todo.state = state
   todo.id = id
