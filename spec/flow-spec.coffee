@@ -2,7 +2,7 @@ test = require 'tape'
 Flow = require '../flow'
 
 test "Core methods of Flow cannot be changed", (t) ->
-  flow = Flow()
+  flow = Flow(commands: {}, commandHandlers: {})
   flow.dispatch = 'foo'
 
   t.false flow.dispatch is 'foo'
