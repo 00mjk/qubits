@@ -15,7 +15,7 @@ test "Repository::add creates an aggregate from and adds the create event to the
     name: 'FooCreatedEvent'
     aggregateId: 'foo1'
     payload: {}
-  store = add: (event) -> t.deepEquals createdEvent, event
+  store = add: (event) -> t.deepEquals event, createdEvent, "event published is as expected"
   Foo = (state) -> state
 
   repository = Repository('Foo', Foo, store)
@@ -23,4 +23,15 @@ test "Repository::add creates an aggregate from and adds the create event to the
   foo = repository.add id: 'foo1'
 
   t.is foo.id, 'foo1'
+  t.end()
+
+test "Repository::load with an existing id returns the aggregate", (t) ->
+  Foo = (state) -> state
+  store = add: ->
+
+  repository = Repository('Foo', Foo, store)
+
+  foo1 = repository.add id: 'foo1'
+
+  t.equal repository.load('foo1'), foo1
   t.end()

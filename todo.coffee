@@ -1,5 +1,7 @@
 EventStore = require './eventStore'
 Repository = require './repository'
+System = require './system'
+Event = require './event'
 
 Todo = (attrs) ->
   id = attrs.id
@@ -13,7 +15,7 @@ Todo = (attrs) ->
     complete:
       value: ->
         state.completed = true
-        aggregateId: id, name: 'TodoCompleted', payload: state
+        Event(aggregateId: id, name: 'TodoCompleted', payload: state)
   }
   todo.state = state
   todo.id = id
@@ -21,9 +23,21 @@ Todo = (attrs) ->
 
 runner = ->
   TodoEventStore = EventStore()
-
   TodoRepository = Repository 'Todo', Todo, TodoEventStore
-  todo1 = TodoRepository.add id: 'todo1', description: 'build it'
-  todo1.complete()
+
+  TodoCommands =
+    CreateTodo: ({ id, description }) -> name: 'CreateTodo', message: {id, description}
+    MarkAsCompleted: ({ id }) -> name: 'MarkAsCompleted', message: {id}
+
+  TodoCommandHandlers =
+    CreateTodo: (attrs) -> TodoRepository.add attrs
+    MarkAsCompleted: ({ id }) ->
+      todo = TodoRepository.load id
+      todo.complete()
+
+  TodoSystem = System commands: TodoCommands, commandHandlers: TodoCommandHandlers
+
+  TodoSystem.dispatch TodoCommands.CreateTodo id: 'todo1', description: 'Write tests.'
+  TodoSystem.dispatch TodoCommands.MarkAsCompleted id: 'todo1'
 
 module.exports = {runner, Todo}
