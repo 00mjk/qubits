@@ -8,13 +8,26 @@ module.exports = function(aggregateName, Aggregate, eventStore) {
       value: function(state) {
         var agg = Aggregate(Object.assign({}, state))
         cache[agg.id] = agg
-        payload = agg.state || {}
+        var payload = agg.state || {}
         return Event({ name: aggregateName + "CreatedEvent", aggregateId: agg.id, payload: payload })
       }
     },
     load: {
       value: function(id) {
-        return cache[id] || null
+        if (cache[id])
+          return cache[id]
+        else {
+          var toReturn = null
+          eventStore.getEvents().reverse().some(function(event) {
+            if (event.aggregateId === id) {
+              var agg = Aggregate(Object.assign({id: id}, event.payload))
+              cache[id] = agg
+              toReturn = agg
+              return true
+            }
+          })
+          return toReturn
+        }
       }
     }
   }

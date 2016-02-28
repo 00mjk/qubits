@@ -17,7 +17,9 @@ test "Repository::add creates an aggregate from passed attributes and returns th
     name: 'FooCreatedEvent'
     aggregateId: 'foo1'
     payload: {}
-  store = add: new Function()
+  store =
+    add: new Function()
+    getEvents: -> []
   Foo = (state) -> state
 
   repository = Repository('Foo', Foo, store)
@@ -29,7 +31,9 @@ test "Repository::add creates an aggregate from passed attributes and returns th
 
 test "Repository::load with an existing id returns the aggregate", (t) ->
   Foo = (state) -> state
-  store = add: ->
+  store =
+    add: new Function()
+    getEvents: -> []
 
   repository = Repository('Foo', Foo, store)
 
@@ -40,9 +44,33 @@ test "Repository::load with an existing id returns the aggregate", (t) ->
 
 test "Repository::load with a non-existent id returns null", (t) ->
   Foo = (state) -> state
-  store = add: ->
+  store =
+    add: new Function()
+    getEvents: -> []
 
   repository = Repository('Foo', Foo, store)
 
   t.equal repository.load('foo1'), null
+  t.end()
+
+test "Repository::load with an existing id that is not already cached returns a recreated instance of most recent state", (t) ->
+  Foo = (state) -> state
+  createdEvent =
+    name: 'FooCreatedEvent'
+    aggregateId: 'foo1'
+    payload:
+      name: 'something'
+  anotherEvent =
+    name: 'AnotherEvent'
+    aggregateId: 'foo1'
+    payload:
+      name: 'another thing'
+
+  store =
+    add: new Function()
+    getEvents: -> [createdEvent, anotherEvent]
+
+  repository = Repository('Foo', Foo, store)
+
+  t.deepEquals repository.load('foo1'), Foo(name: anotherEvent.payload.name)
   t.end()
