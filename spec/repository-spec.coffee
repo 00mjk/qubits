@@ -72,5 +72,5 @@ test "Repository::load with an existing id that is not already cached returns a 
 
   repository = Repository('Foo', Foo, store)
 
-  t.deepEquals repository.load('foo1'), Foo(name: anotherEvent.payload.name)
+  t.deepEquals repository.load('foo1'), Foo(id: 'foo1', name: anotherEvent.payload.name)
   t.end()

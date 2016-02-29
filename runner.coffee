@@ -3,24 +3,17 @@ EventBus = require './eventBus'
 Repository = require './repository'
 Flow = require './flow'
 Event = require './event'
+defineAggregate = require './defineAggregate'
 
-Todo = (attrs) ->
-  id = attrs.id
-  delete attrs.id
-  state =
+Todo = defineAggregate
+  name: 'Todo'
+  state:
     description: null
     completed: false
-
-  state = Object.assign state, attrs
-  todo = Object.defineProperties {}, {
-    complete:
-      value: ->
-        state.completed = true
-        Event(aggregateId: id, name: 'TodoCompletedEvent', payload: state)
-  }
-  todo.state = state
-  todo.id = id
-  todo
+  methods:
+    complete: ->
+      @state.completed = true
+      Event(aggregateId: @id, name: 'TodoCompletedEvent', payload: @state)
 
 TodoEventStore = EventStore()
 TodoRepository = Repository 'Todo', Todo, TodoEventStore
