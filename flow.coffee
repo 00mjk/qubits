@@ -6,5 +6,6 @@ module.exports = ({eventStore, eventBus, commands, commandHandlers, eventListene
         if events?
           eventStore.add events
           eventBus.publish events
+        events
 
   Object.defineProperties {}, properties

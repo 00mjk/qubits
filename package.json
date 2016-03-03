@@ -3,7 +3,7 @@
   "author": "akonwi",
   "version": "0.0.1",
   "description": "Some components for cqrs",
-  "main": " ",
+  "main": "index.coffee",
   "devDependencies": {
     "should": "^8.2.2",
     "tape": "^4.4.0",
