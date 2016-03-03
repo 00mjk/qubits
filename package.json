@@ -1,5 +1,5 @@
 {
-  "name": "system",
+  "name": "flow",
   "author": "akonwi",
   "version": "0.0.1",
   "description": "Some components for cqrs",
