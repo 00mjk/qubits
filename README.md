@@ -28,10 +28,11 @@ This is simply a POC and my way of writing down my thoughts about how I would wa
 
 Based on these definitions of the components, the system should work like this:
 
-  CommandHandlers are effectively `CH(Command) -> [Event]`
-  Actions the domain model can execute are `A() -> [Event]`
+  > CommandHandlers are effectively `CH(Command) -> [...Event]`
 
-Meaning every intention to change the state of the domain model results in *n* events (where n = 0 is a failure and n > 0 is success).
+  >Actions the domain model can execute are `A() -> [...Event]`
+
+This means every intention to change the state of the domain model results in *n* events (where n = 0 is a failure and n > 0 is success).
 
 ## Examples of usage
 Of course, I'll use a Todo application because that's the app any system can build.
