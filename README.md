@@ -79,7 +79,7 @@ TodoEventBus.registerListeners
   ]
 ```
 
-### It _can_ all come together with...
+### It _can_(doesn't have to) all come together like so...
 ``` coffeescript
 TodoFlow = System.Flow
   eventStore: TodoEventStore
