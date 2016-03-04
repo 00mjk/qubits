@@ -4,7 +4,7 @@ defineAggregate = require '../defineAggregate'
 test "defineAggregate takes an object with name, idGenerator, state, and methods, and returns a factory function", (t) ->
   SomeAggregate = defineAggregate
     name: 'SomeAggregate'
-    id: -> 'foo1'
+    idGenerator: -> 'foo1'
     state:
       name: null
     methods:
@@ -36,7 +36,7 @@ test "Factory function expects an id if an id function isn't passed to defineAgg
 
 test "Factory function throws an error if an id function has already been defined", (t) ->
   Aggregate = defineAggregate
-    id: -> 'foo1'
+    idGenerator: -> 'foo1'
     state: {}
     methods: {}
 
