@@ -1,3 +1,5 @@
+doAtSomePoint = (cb) -> setTimeout(cb, 0)
+
 module.exports = ->
   listeners = {}
 
@@ -9,8 +11,8 @@ module.exports = ->
       listenersForEvent.push listener
 
   registerListeners = (mapping) ->
-    for event, ls of mapping
-      ls.forEach (listener) -> registerListener event, listener
+    for eventName, ls of mapping
+      ls.forEach (listener) -> registerListener(eventName, listener)
 
   properties =
     registerListeners:
@@ -19,6 +21,7 @@ module.exports = ->
       value: registerListener
     publish:
       value: (event) ->
-        listeners[event.name]?.forEach (listener) -> listener(event)
+        listeners[event.name]?.forEach (listener) ->
+          doAtSomePoint -> listener(event)
 
   Object.defineProperties {}, properties
