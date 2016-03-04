@@ -1,4 +1,4 @@
-# Flow
+# System
 This is simply a POC and my way of writing down my thoughts about how I would want to implement a CQRS system. The focus here is on components/tools and functions that can be interchanged rather than a full framework.
 
 ## components
@@ -37,7 +37,7 @@ Meaning every intention to change the state of the domain model results in *n* e
 Of course, I'll use a Todo application because that's the app any system can build.
 
 ``` coffeescript
-System = require 'flow'
+System = require 'system'
 
 Todo = System.defineAggregate
   name: 'Todo'
