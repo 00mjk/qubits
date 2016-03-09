@@ -5,9 +5,10 @@
   "description": "Some components for cqrs",
   "main": "index.coffee",
   "devDependencies": {
+    "coffeetape": "^1.0.1",
+    "is-plain-obj": "^1.1.0",
     "should": "^8.2.2",
-    "tape": "^4.4.0",
-    "coffeetape": "^1.0.1"
+    "tape": "^4.4.0"
   },
   "scripts": {
     "test": "coffeetape 'spec/*.coffee' | faucet"
