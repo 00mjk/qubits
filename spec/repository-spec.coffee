@@ -16,7 +16,9 @@ test "Repository::add creates an aggregate from passed attributes and returns th
   createdEvent =
     name: 'FooCreatedEvent'
     aggregateId: 'foo1'
-    payload: {}
+    payload:
+      id: 'foo1'
+    state: {}
   store =
     add: new Function()
     getEvents: -> []
