@@ -48,7 +48,7 @@ Todo = System.defineAggregate
   methods:
     complete: ->
       @state.completed = true
-      System.Event(aggregateId: @id, name: 'TodoCompletedEvent', payload: @state)
+      System.Event(aggregateId: @id, name: 'TodoCompletedEvent', payload: {completed: true}, state: @state)
 
 TodoCommands =
   CreateTodo: ({id, description }) -> name: 'CreateTodo', message: {id, description}
