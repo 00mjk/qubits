@@ -62,10 +62,14 @@ test "Repository::load with an existing id that is not already cached returns a 
     aggregateId: 'foo1'
     payload:
       name: 'something'
+    state:
+      name: 'something'
   anotherEvent =
     name: 'AnotherEvent'
     aggregateId: 'foo1'
     payload:
+      name: 'another thing'
+    state:
       name: 'another thing'
 
   store =

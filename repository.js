@@ -20,7 +20,7 @@ module.exports = function(aggregateName, Aggregate, eventStore) {
           var toReturn = null
           eventStore.getEvents().reverse().some(function(event) {
             if (event.aggregateId === id) {
-              var agg = Aggregate(Object.assign({id: id}, event.payload))
+              var agg = Aggregate(Object.assign({id: id}, event.state))
               cache[id] = agg
               toReturn = agg
               return true
