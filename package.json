@@ -1,9 +1,10 @@
 {
-  "name": "system",
+  "name": "ganglion",
   "author": "akonwi",
   "version": "0.0.1",
   "description": "Some components for cqrs",
-  "main": "index.coffee",
+  "repository": "akonwi/ganglion",
+  "main": "build/index.js",
   "devDependencies": {
     "coffeetape": "^1.0.1",
     "is-plain-obj": "^1.1.0",
@@ -11,7 +12,8 @@
     "tape": "^4.4.0"
   },
   "scripts": {
-    "test": "coffeetape 'spec/*.coffee' | faucet"
+    "test": "coffeetape 'src/spec/*.coffee' | faucet",
+    "prepublish": "coffee -o build/ -c src/*.coffee"
   },
   "keywords": [
     "cqrs"
