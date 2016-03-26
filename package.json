@@ -1,9 +1,9 @@
 {
-  "name": "ganglion",
+  "name": "eventuality",
   "author": "akonwi",
   "version": "0.0.1",
   "description": "Some components for cqrs",
-  "repository": "akonwi/ganglion",
+  "repository": "akonwi/eventuality",
   "main": "build/index.js",
   "devDependencies": {
     "coffeetape": "^1.0.1",

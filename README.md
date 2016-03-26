@@ -1,4 +1,4 @@
-# Ganglion
+# Eventuality
 This is simply a POC and my way of writing down my thoughts about how I would want to implement a CQRS system. The focus here is on components/tools and functions that can be interchanged rather than a full framework.
 
 ## components
@@ -38,9 +38,9 @@ This means every intention to change the state of the domain model results in *n
 Of course, I'll use a Todo application because that's the app any system can build.
 
 ``` coffeescript
-Ganglion = require 'ganglion'
+Eventuality = require 'eventuality'
 
-Todo = Ganglion.defineAggregate
+Todo = Eventuality.defineAggregate
   name: 'Todo'
   state:
     description: null
@@ -48,15 +48,15 @@ Todo = Ganglion.defineAggregate
   methods:
     complete: ->
       @state.completed = true
-      Ganglion.Event(aggregateId: @id, name: 'TodoCompletedEvent', payload: {completed: true}, state: @state)
+      Eventuality.Event(aggregateId: @id, name: 'TodoCompletedEvent', payload: {completed: true}, state: @state)
 
 TodoCommands =
   CreateTodo: ({id, description }) -> name: 'CreateTodo', message: {id, description}
   MarkAsCompleted: ({ id }) -> name: 'MarkAsCompleted', message: {id}
 
-TodoEventStore = Ganglion.EventStore()
+TodoEventStore = Eventuality.EventStore()
 
-TodoRepository = Ganglion.Repository 'Todo', Todo, TodoEventStore
+TodoRepository = Eventuality.Repository 'Todo', Todo, TodoEventStore
 
 TodoCommandHandlers =
   CreateTodo: (attrs) -> TodoRepository.add attrs
@@ -64,7 +64,7 @@ TodoCommandHandlers =
     todo = TodoRepository.load id
     todo.complete()
 
-TodoEventBus = Ganglion.EventBus()
+TodoEventBus = Eventuality.EventBus()
 
 TodoCreatedEventListenerToUpdateDB = (event) -> # Update database...
 TodoCreatedEventListenerToLogStuff = (event) -> # Do some logging...
@@ -82,7 +82,7 @@ TodoEventBus.registerListeners
 
 ### It _can_(doesn't have to) all come together like so...
 ``` coffeescript
-TodoFlow = Ganglion.Flow
+TodoFlow = Eventuality.Flow
   eventStore: TodoEventStore
   eventBus: TodoEventBus
   commands: TodoCommands
