@@ -85,7 +85,6 @@ TodoEventBus.registerListeners
 TodoFlow = Eventuality.Flow
   eventStore: TodoEventStore
   eventBus: TodoEventBus
-  commands: TodoCommands
   commandHandlers: TodoCommandHandlers
 
 ## Later when the user wants to do things...

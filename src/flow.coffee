@@ -1,4 +1,4 @@
-module.exports = ({eventStore, eventBus, commands, commandHandlers}) ->
+module.exports = ({eventStore, eventBus, commandHandlers}) ->
   properties =
     dispatch:
       value: (command) ->
