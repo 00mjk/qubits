@@ -2,7 +2,7 @@ test = require 'tape'
 Repository = require '../repository'
 
 test "Core methods of Repository cannot be changed", (t) ->
-  repository = Repository()
+  repository = Repository('')
   repository.add = 'foo'
   repository.load = 'foo'
 
@@ -79,4 +79,37 @@ test "Repository::load with an existing id that is not already cached returns a 
   repository = Repository('Foo', Foo, store)
 
   t.deepEquals repository.load('foo1'), Foo(id: 'foo1', name: anotherEvent.payload.name)
+  t.end()
+
+test "Repository::delete returns an event", (t) ->
+  Foo = (state) -> state
+  store =
+    add: new Function()
+    getEvents: -> []
+
+  deletedEvent =
+    name: 'FooDeletedEvent'
+    aggregateId: 'foo1'
+    payload: {}
+    state: {}
+  repository = Repository('Foo', Foo, store)
+
+  {aggregateId} = repository.add id: 'foo1'
+
+  result = repository.delete(aggregateId)
+  t.deepEquals result, deletedEvent, "event published is as expected"
+  t.end()
+
+test "After Repository::delete an aggregate is no longer accessible", (t) ->
+  Foo = (state) -> state
+  store =
+    add: new Function()
+    getEvents: -> []
+
+  repository = Repository('Foo', Foo, store)
+
+  {aggregateId} = repository.add id: 'foo1'
+
+  repository.delete(aggregateId)
+  t.equals repository.load('foo1'), null
   t.end()
