@@ -1,11 +1,13 @@
-module.exports = ->
+module.exports = (overrides={})->
   events = []
+
+  add = (event) -> events.push event
+  getEvents = -> events.slice()
 
   properties =
     add:
-      value: (event) ->
-        events.push event
+      value: overrides.add || add
     getEvents:
-      value: -> events.slice()
+      value: overrides.getEvents || getEvents
 
   Object.defineProperties {}, properties
