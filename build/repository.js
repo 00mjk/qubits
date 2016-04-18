@@ -5,9 +5,29 @@
   Event = require('./event');
 
   module.exports = function(aggregateName, Aggregate, eventStore) {
-    var _delete, add, cache, load, properties;
+    var _load, add, cache, load, properties, remove;
     aggregateName = aggregateName.trim();
     cache = {};
+    _load = function(aggregateId, events) {
+      var loaded;
+      loaded = null;
+      events.reverse().some(function(event) {
+        var agg;
+        if (event.aggregateId === aggregateId) {
+          if (event.name === (aggregateName + "DeletedEvent")) {
+            loaded = null;
+          } else {
+            agg = Aggregate(Object.assign({
+              id: aggregateId
+            }, event.state));
+            cache[aggregateId] = agg;
+            loaded = agg;
+          }
+          return true;
+        }
+      });
+      return loaded;
+    };
     add = function(attrs) {
       var agg, state;
       agg = Aggregate(Object.assign({}, attrs));
@@ -21,30 +41,21 @@
       });
     };
     load = function(aggregateId) {
-      var toReturn;
+      var _events;
       if (cache[aggregateId]) {
         return cache[aggregateId];
       } else {
-        toReturn = null;
-        eventStore.getEvents().reverse().some(function(event) {
-          var agg;
-          if (event.aggregateId === aggregateId) {
-            if (event.name === (aggregateName + "DeletedEvent")) {
-              toReturn = null;
-            } else {
-              agg = Aggregate(Object.assign({
-                id: aggregateId
-              }, event.state));
-              cache[aggregateId] = agg;
-              toReturn = agg;
-            }
-            return true;
-          }
-        });
-        return toReturn;
+        _events = eventStore.getEvents();
+        if (_events.then != null) {
+          return _events.then(function(events) {
+            return _load(aggregateId, events);
+          });
+        } else {
+          return _load(aggregateId, _events);
+        }
       }
     };
-    _delete = function(aggregateId) {
+    remove = function(aggregateId) {
       var event, state;
       state = load(aggregateId).state;
       event = Event({
@@ -63,7 +74,7 @@
         value: load
       },
       "delete": {
-        value: _delete
+        value: remove
       }
     };
     return Object.defineProperties({}, properties);

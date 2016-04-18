@@ -1,6 +1,8 @@
 test = require 'tape'
 Repository = require '../repository'
 
+Foo = (state) -> state
+
 test "Core methods of Repository cannot be changed", (t) ->
   repository = Repository('')
   repository.add = 'foo'
@@ -22,7 +24,6 @@ test "Repository::add creates an aggregate from passed attributes and returns th
   store =
     add: new Function()
     getEvents: -> []
-  Foo = (state) -> state
 
   repository = Repository('Foo', Foo, store)
 
@@ -32,7 +33,6 @@ test "Repository::add creates an aggregate from passed attributes and returns th
   t.end()
 
 test "Repository::load with an existing id returns the aggregate", (t) ->
-  Foo = (state) -> state
   store =
     add: new Function()
     getEvents: -> []
@@ -45,7 +45,6 @@ test "Repository::load with an existing id returns the aggregate", (t) ->
   t.end()
 
 test "Repository::load with a non-existent id returns null", (t) ->
-  Foo = (state) -> state
   store =
     add: new Function()
     getEvents: -> []
@@ -56,7 +55,6 @@ test "Repository::load with a non-existent id returns null", (t) ->
   t.end()
 
 test "Repository::load with an existing id that is not already cached returns a recreated instance of most recent state", (t) ->
-  Foo = (state) -> state
   createdEvent =
     name: 'FooCreatedEvent'
     aggregateId: 'foo1'
@@ -81,8 +79,25 @@ test "Repository::load with an existing id that is not already cached returns a 
   t.deepEquals repository.load('foo1'), Foo(id: 'foo1', name: anotherEvent.payload.name)
   t.end()
 
+test "Repository::load returns a promise if EventStore is promised based", (t) ->
+  t.plan 1
+
+  createdEvent =
+    name: 'FooCreatedEvent'
+    aggregateId: 'foo1'
+    payload:
+      name: 'something'
+    state:
+      name: 'something'
+
+  store =
+    add: new Function()
+    getEvents: -> Promise.resolve([createdEvent])
+
+  repository = Repository('Foo', Foo, store)
+  repository.load('foo1').then (loaded) -> t.deepEquals loaded, Foo(id: 'foo1', name: createdEvent.payload.name)
+
 test "Repository::delete returns an event", (t) ->
-  Foo = (state) -> state
   store =
     add: new Function()
     getEvents: -> []
@@ -101,7 +116,6 @@ test "Repository::delete returns an event", (t) ->
   t.end()
 
 test "After Repository::delete an aggregate is no longer accessible", (t) ->
-  Foo = (state) -> state
   store =
     add: new Function()
     getEvents: -> []
