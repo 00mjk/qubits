@@ -55,6 +55,12 @@ TodoCommands =
   MarkAsCompleted: ({ id }) -> name: 'MarkAsCompleted', message: {id}
 
 TodoEventStore = Eventuality.EventStore()
+# If you want to persist events somewhere else
+#
+# TodoEventStore = Eventuality.EventStore({
+#   add: (event) -> # put it somewhere
+#   getEvents: -> # return an array of events
+# })
 
 TodoRepository = Eventuality.Repository 'Todo', Todo, TodoEventStore
 
