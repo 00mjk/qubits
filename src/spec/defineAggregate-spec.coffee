@@ -34,11 +34,12 @@ test "Factory function expects an id if an id function isn't passed to defineAgg
   t.throws Aggregate
   t.end()
 
-test "Factory function throws an error if an id function has already been defined", (t) ->
+test "Factory function uses the passed in id even if an id function has already been defined", (t) ->
   Aggregate = defineAggregate
     idGenerator: -> 'foo1'
     state: {}
     methods: {}
 
-  t.throws Aggregate
+  agg = Aggregate({id: 'foo2'})
+  t.is agg.id, 'foo2', "created object has the passed in id"
   t.end()

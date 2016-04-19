@@ -8,9 +8,7 @@ module.exports = ({name, idGenerator, state, methods}={name: 'Aggregate'}) ->
         instanceId = attrs.id
         delete attrs.id
     else
-      if !!attrs.id
-        throw new Error("An id generator has been already been provided for #{name}. Passing an id to the factory function isn't necessary")
-      instanceId = idGenerator()
+      instanceId = attrs.id ? idGenerator()
     instanceState = Object.assign {}, state, attrs
     aggregate = Object.defineProperty {}, 'state', value: instanceState
     for name, fn of methods

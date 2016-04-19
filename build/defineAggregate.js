@@ -6,7 +6,7 @@
       name: 'Aggregate'
     }, name = ref.name, idGenerator = ref.idGenerator, state = ref.state, methods = ref.methods;
     return function(attrs) {
-      var aggregate, fn, instanceId, instanceState;
+      var aggregate, fn, instanceId, instanceState, ref1;
       instanceId = null;
       if ((idGenerator != null) === false) {
         if (!!attrs.id === false) {
@@ -16,10 +16,7 @@
           delete attrs.id;
         }
       } else {
-        if (!!attrs.id) {
-          throw new Error("An id generator has been already been provided for " + name + ". Passing an id to the factory function isn't necessary");
-        }
-        instanceId = idGenerator();
+        instanceId = (ref1 = attrs.id) != null ? ref1 : idGenerator();
       }
       instanceState = Object.assign({}, state, attrs);
       aggregate = Object.defineProperty({}, 'state', {

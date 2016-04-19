@@ -1,5 +1,8 @@
 ## Changelog
 
+### 0.1.1
+- Aggregates with a defined 'idGenerator' can have `id` overridden
+
 ### 0.1.0
 - Remove `commands` from options passed to `Flow`
 - Add `Repository::delete` method
