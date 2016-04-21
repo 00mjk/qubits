@@ -32,7 +32,7 @@ test "Repository::add creates an aggregate from passed attributes and returns th
   t.deepEquals result, createdEvent, "event published is as expected"
   t.end()
 
-test "Repository::load with an existing id returns the aggregate", (t) ->
+test "Repository::load with an existing id resolves to the aggregate", (t) ->
   store =
     add: new Function()
     getEvents: -> []
@@ -41,18 +41,20 @@ test "Repository::load with an existing id returns the aggregate", (t) ->
 
   {aggregateId} = repository.add id: 'foo1'
 
-  t.equals repository.load('foo1').id, aggregateId
-  t.end()
+  repository.load('foo1').then (aggreate) ->
+    t.equals aggreate.id, aggregateId
+    t.end()
 
-test "Repository::load with a non-existent id returns null", (t) ->
+test "Repository::load with a non-existent id resolves to null", (t) ->
   store =
     add: new Function()
     getEvents: -> []
 
   repository = Repository('Foo', Foo, store)
 
-  t.equal repository.load('foo1'), null
-  t.end()
+  repository.load('foo1').then (aggregate) ->
+    t.equal aggregate, null
+    t.end()
 
 test "Repository::load with an existing id that is not already cached returns a recreated instance of most recent state", (t) ->
   createdEvent =
@@ -75,29 +77,11 @@ test "Repository::load with an existing id that is not already cached returns a 
     getEvents: -> [createdEvent, anotherEvent]
 
   repository = Repository('Foo', Foo, store)
+  repository.load('foo1').then (aggregate) ->
+    t.deepEquals aggregate, Foo(id: 'foo1', name: anotherEvent.payload.name)
+    t.end()
 
-  t.deepEquals repository.load('foo1'), Foo(id: 'foo1', name: anotherEvent.payload.name)
-  t.end()
-
-test "Repository::load returns a promise if EventStore is promised based", (t) ->
-  t.plan 1
-
-  createdEvent =
-    name: 'FooCreatedEvent'
-    aggregateId: 'foo1'
-    payload:
-      name: 'something'
-    state:
-      name: 'something'
-
-  store =
-    add: new Function()
-    getEvents: -> Promise.resolve([createdEvent])
-
-  repository = Repository('Foo', Foo, store)
-  repository.load('foo1').then (loaded) -> t.deepEquals loaded, Foo(id: 'foo1', name: createdEvent.payload.name)
-
-test "Repository::delete returns an event", (t) ->
+test "Repository::delete resolves to an event", (t) ->
   store =
     add: new Function()
     getEvents: -> []
@@ -111,9 +95,9 @@ test "Repository::delete returns an event", (t) ->
 
   {aggregateId} = repository.add id: 'foo1'
 
-  result = repository.delete(aggregateId)
-  t.deepEquals result, deletedEvent, "event published is as expected"
-  t.end()
+  repository.delete(aggregateId).then (event) ->
+    t.deepEquals event, deletedEvent, "event published is as expected"
+    t.end()
 
 test "After Repository::delete an aggregate is no longer accessible", (t) ->
   store =
@@ -125,5 +109,7 @@ test "After Repository::delete an aggregate is no longer accessible", (t) ->
   {aggregateId} = repository.add id: 'foo1'
 
   repository.delete(aggregateId)
-  t.equals repository.load('foo1'), null
-  t.end()
+  .then (event) -> repository.load('foo1')
+  .then (aggregate) ->
+    t.equal aggregate, null, "the promise resolved to null"
+    t.end()

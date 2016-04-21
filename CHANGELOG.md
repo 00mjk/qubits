@@ -1,5 +1,8 @@
 ## Changelog
 
+### 0.2.0
+- Repository::load, Repository::delete, and Flow::dispatch return Promises.
+
 ### 0.1.1
 - Aggregates with a defined 'idGenerator' can have `id` overridden
 

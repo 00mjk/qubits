@@ -28,8 +28,6 @@ test "Flow will correctly map dispatched commands to their handlers", (t) ->
 
   flow.dispatch Commands.Add()
 
-  t.end()
-
 test "Flow puts newly created events from command handlers into the EventStore and EventBus", (t) ->
   t.plan 2
 
@@ -41,24 +39,6 @@ test "Flow puts newly created events from command handlers into the EventStore a
     Add: -> name: 'Add', message: {}
   Handlers =
     Add: -> AddedEvent
-
-  flow = Flow(eventStore: EventStore, eventBus: EventBus, commandHandlers: Handlers)
-
-  flow.dispatch Commands.Add()
-
-  t.end()
-
-test "Flow puts newly created events from Promise returning command handlers into the EventStore and EventBus", (t) ->
-  t.plan 2
-
-  AddedEvent = Event aggregateId: 'foo', name: 'AddedEvent', payload: {}
-  EventStore = add: (event) -> t.equal event, AddedEvent, "EventStore::add was called with the event"
-  EventBus = publish: (event) -> t.equal event, AddedEvent, "EventBus::publish was called with the event"
-
-  Commands =
-    Add: -> name: 'Add', message: {}
-  Handlers =
-    Add: -> Promise.resolve(AddedEvent)
 
   flow = Flow(eventStore: EventStore, eventBus: EventBus, commandHandlers: Handlers)
 

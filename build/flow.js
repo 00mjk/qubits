@@ -8,14 +8,10 @@
       return eventBus != null ? typeof eventBus.publish === "function" ? eventBus.publish(events) : void 0 : void 0;
     };
     dispatch = function(command) {
-      var _events, name;
-      _events = typeof commandHandlers[name = command.name] === "function" ? commandHandlers[name](command.message) : void 0;
-      if (_events.then != null) {
-        _events.then(sendEvents);
-      } else {
-        sendEvents(_events);
-      }
-      return _events;
+      var name;
+      return Promise.resolve(typeof commandHandlers[name = command.name] === "function" ? commandHandlers[name](command.message) : void 0).then(sendEvents)["catch"](function(error) {
+        return console.error(error);
+      });
     };
     properties = {
       dispatch: {

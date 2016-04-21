@@ -179,14 +179,10 @@
       return eventBus != null ? typeof eventBus.publish === "function" ? eventBus.publish(events) : void 0 : void 0;
     };
     dispatch = function(command) {
-      var _events, name;
-      _events = typeof commandHandlers[name = command.name] === "function" ? commandHandlers[name](command.message) : void 0;
-      if (_events.then != null) {
-        _events.then(sendEvents);
-      } else {
-        sendEvents(_events);
-      }
-      return _events;
+      var name;
+      return Promise.resolve(typeof commandHandlers[name = command.name] === "function" ? commandHandlers[name](command.message) : void 0).then(sendEvents)["catch"](function(error) {
+        return console.error(error);
+      });
     };
     properties = {
       dispatch: {
@@ -270,30 +266,29 @@
       });
     };
     load = function(aggregateId) {
-      var _events;
       if (cache[aggregateId]) {
-        return cache[aggregateId];
+        return Promise.resolve(cache[aggregateId]);
       } else {
-        _events = eventStore.getEvents();
-        if (_events.then != null) {
-          return _events.then(function(events) {
-            return _load(aggregateId, events);
-          });
-        } else {
-          return _load(aggregateId, _events);
-        }
+        return Promise.resolve(eventStore.getEvents()).then(function(events) {
+          return _load(aggregateId, events);
+        });
       }
     };
     remove = function(aggregateId) {
-      var event, state;
-      state = load(aggregateId).state;
-      event = Event({
-        name: aggregateName + "DeletedEvent",
-        aggregateId: aggregateId,
-        state: state
+      return load(aggregateId).then(function(arg) {
+        var event, state;
+        state = arg.state;
+        if ((state != null) === false) {
+          Promise.reject("Could not load aggregate with id of " + aggregateId);
+        }
+        event = Event({
+          name: aggregateName + "DeletedEvent",
+          aggregateId: aggregateId,
+          state: state
+        });
+        delete cache[aggregateId];
+        return event;
       });
-      delete cache[aggregateId];
-      return event;
     };
     properties = {
       add: {

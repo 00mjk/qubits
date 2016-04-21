@@ -41,30 +41,29 @@
       });
     };
     load = function(aggregateId) {
-      var _events;
       if (cache[aggregateId]) {
-        return cache[aggregateId];
+        return Promise.resolve(cache[aggregateId]);
       } else {
-        _events = eventStore.getEvents();
-        if (_events.then != null) {
-          return _events.then(function(events) {
-            return _load(aggregateId, events);
-          });
-        } else {
-          return _load(aggregateId, _events);
-        }
+        return Promise.resolve(eventStore.getEvents()).then(function(events) {
+          return _load(aggregateId, events);
+        });
       }
     };
     remove = function(aggregateId) {
-      var event, state;
-      state = load(aggregateId).state;
-      event = Event({
-        name: aggregateName + "DeletedEvent",
-        aggregateId: aggregateId,
-        state: state
+      return load(aggregateId).then(function(arg) {
+        var event, state;
+        state = arg.state;
+        if ((state != null) === false) {
+          Promise.reject("Could not load aggregate with id of " + aggregateId);
+        }
+        event = Event({
+          name: aggregateName + "DeletedEvent",
+          aggregateId: aggregateId,
+          state: state
+        });
+        delete cache[aggregateId];
+        return event;
       });
-      delete cache[aggregateId];
-      return event;
     };
     properties = {
       add: {

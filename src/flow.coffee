@@ -4,12 +4,9 @@ module.exports = ({eventStore, eventBus, commandHandlers}) ->
     eventBus?.publish?(events)
 
   dispatch = (command) ->
-    _events = commandHandlers[command.name]?(command.message)
-    if _events.then?
-      _events.then sendEvents
-    else
-      sendEvents _events
-    _events
+    Promise.resolve(commandHandlers[command.name]?(command.message))
+    .then(sendEvents)
+    .catch (error) -> console.error(error)
 
   properties =
     dispatch:
