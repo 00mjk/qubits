@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Eventuality by akonwi</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Eventuality</h1>
+        <h2>How I&#39;d like to do CQRS</h2>
+        <a href="https://github.com/akonwi/eventuality" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="eventuality" class="anchor" href="#eventuality" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Eventuality</h1>
+
+<p>This is simply a POC and my way of writing down my thoughts about how I would want to implement a CQRS system. The focus here is on components/tools and functions that can be interchanged rather than a full framework.</p>
+
+<h2>
+<a id="components" class="anchor" href="#components" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>components</h2>
+
+<ul>
+<li>
+<p>Domain Model (Aggregate)</p>
+
+<blockquote>
+<p>This is the object that represents the state of our model. Only it can change its own state as a result of Commands. Each state change results in an Event.</p>
+</blockquote>
+</li>
+<li>
+<p>EventStore</p>
+
+<blockquote>
+<p>A storage facility for events/history/facts. This can be in memory or backed by a database. What I have here is in memory.</p>
+</blockquote>
+</li>
+<li>
+<p>EventBus</p>
+
+<blockquote>
+<p>The medium through which facts of state change are shared to interested observers.</p>
+</blockquote>
+</li>
+<li>
+<p>EventListeners</p>
+
+<blockquote>
+<p>These are the observers of facts of state changes. They are functions to be invoked when the domain model has changed its state.</p>
+</blockquote>
+</li>
+<li>
+<p>Repository</p>
+
+<blockquote>
+<p>A component through which we create and access the domain model.</p>
+</blockquote>
+</li>
+<li>
+<p>Commands</p>
+
+<blockquote>
+<p>Objects representing an intent of state change by the user on the domain model.</p>
+</blockquote>
+</li>
+<li>
+<p>CommandHandlers</p>
+
+<blockquote>
+<p>Functions with the purpose of communicating the intended state change to the domain model.  </p>
+</blockquote>
+</li>
+<li>
+<p>Events  </p>
+
+<blockquote>
+<p>Objects representing a fact of state change in the domain model.</p>
+</blockquote>
+</li>
+</ul>
+
+<p>Based on these definitions of the components, the system should work like this:</p>
+
+<blockquote>
+<p>CommandHandlers are effectively <code>CH(Command) -&gt; [...Event]</code></p>
+
+<p>Actions the domain model can execute are <code>A() -&gt; [...Event]</code></p>
+</blockquote>
+
+<p>This means every intention to change the state of the domain model results in <em>n</em> events (where n = 0 is a failure and n &gt; 0 is success).</p>
+
+<h2>
+<a id="examples-of-usage" class="anchor" href="#examples-of-usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Examples of usage</h2>
+
+<p>Of course, I'll use a Todo application because that's the app any system can build.</p>
+
+<div class="highlight highlight-source-coffee"><pre><span class="pl-v"><span class="pl-v">Eventuality <span class="pl-k">=</span></span></span> <span class="pl-c1">require</span> <span class="pl-s"><span class="pl-pds">'</span>eventuality<span class="pl-pds">'</span></span>
+
+<span class="pl-v"><span class="pl-v">Todo <span class="pl-k">=</span></span></span> Eventuality.defineAggregate
+  <span class="pl-v"><span class="pl-v">name:</span></span> <span class="pl-s"><span class="pl-pds">'</span>Todo<span class="pl-pds">'</span></span>
+  <span class="pl-v"><span class="pl-v">state:</span></span>
+    <span class="pl-v"><span class="pl-v">description:</span></span> <span class="pl-c1">null</span>
+    <span class="pl-v"><span class="pl-v">completed:</span></span> <span class="pl-c1">false</span>
+  <span class="pl-v"><span class="pl-v">methods:</span></span>
+    <span class="pl-en">complete</span><span class="pl-k">:</span> <span class="pl-k"><span class="pl-k">-&gt;</span></span>
+      <span class="pl-smi">@state</span>.<span class="pl-v"><span class="pl-v">completed <span class="pl-k">=</span></span></span> <span class="pl-c1">true</span>
+      Eventuality.<span class="pl-en">Event</span>(<span class="pl-v"><span class="pl-v">aggregateId:</span></span> <span class="pl-smi">@id</span>, <span class="pl-v"><span class="pl-v">name:</span></span> <span class="pl-s"><span class="pl-pds">'</span>TodoCompletedEvent<span class="pl-pds">'</span></span>, <span class="pl-v"><span class="pl-v">payload:</span></span> {<span class="pl-v"><span class="pl-v">completed:</span></span> <span class="pl-c1">true</span>}, <span class="pl-v"><span class="pl-v">state:</span></span> <span class="pl-smi">@state</span>)
+
+<span class="pl-v"><span class="pl-v">TodoCommands <span class="pl-k">=</span></span></span>
+  <span class="pl-en">CreateTodo</span><span class="pl-k">:</span><span class="pl-smi"> <span class="pl-smi">({id, description })</span></span> <span class="pl-k"><span class="pl-k">-&gt;</span></span> <span class="pl-v"><span class="pl-v">name:</span></span> <span class="pl-s"><span class="pl-pds">'</span>CreateTodo<span class="pl-pds">'</span></span>, <span class="pl-v"><span class="pl-v">message:</span></span> {id, description}
+  <span class="pl-en">MarkAsCompleted</span><span class="pl-k">:</span><span class="pl-smi"> <span class="pl-smi">({ id })</span></span> <span class="pl-k"><span class="pl-k">-&gt;</span></span> <span class="pl-v"><span class="pl-v">name:</span></span> <span class="pl-s"><span class="pl-pds">'</span>MarkAsCompleted<span class="pl-pds">'</span></span>, <span class="pl-v"><span class="pl-v">message:</span></span> {id}
+
+<span class="pl-v"><span class="pl-v">TodoEventStore <span class="pl-k">=</span></span></span> Eventuality.<span class="pl-en">EventStore</span>()
+
+<span class="pl-v"><span class="pl-v">TodoRepository <span class="pl-k">=</span></span></span> Eventuality.<span class="pl-en">Repository </span><span class="pl-s"><span class="pl-pds">'</span>Todo<span class="pl-pds">'</span></span>, Todo, TodoEventStore
+
+<span class="pl-v"><span class="pl-v">TodoCommandHandlers <span class="pl-k">=</span></span></span>
+  <span class="pl-en">CreateTodo</span><span class="pl-k">:</span><span class="pl-smi"> <span class="pl-smi">(attrs)</span></span> <span class="pl-k"><span class="pl-k">-&gt;</span></span> TodoRepository.<span class="pl-en">add </span>attrs
+  <span class="pl-en">MarkAsCompleted</span><span class="pl-k">:</span><span class="pl-smi"> <span class="pl-smi">({ id })</span></span> <span class="pl-k"><span class="pl-k">-&gt;</span></span>
+    TodoRepository.<span class="pl-en">load</span>(id).then <span class="pl-smi">(todo)</span> <span class="pl-k">-&gt;</span>
+      todo.<span class="pl-en">complete</span>()
+
+<span class="pl-v"><span class="pl-v">TodoEventBus <span class="pl-k">=</span></span></span> Eventuality.<span class="pl-en">EventBus</span>()
+
+<span class="pl-en">TodoCreatedEventListenerToUpdateDB </span><span class="pl-k">=</span><span class="pl-smi"> <span class="pl-smi">(event)</span></span> <span class="pl-k"><span class="pl-k">-&gt;</span></span> <span class="pl-c"># Update database...</span>
+<span class="pl-en">TodoCreatedEventListenerToLogStuff </span><span class="pl-k">=</span><span class="pl-smi"> <span class="pl-smi">(event)</span></span> <span class="pl-k"><span class="pl-k">-&gt;</span></span> <span class="pl-c"># Do some logging...</span>
+
+TodoEventBus.registerListeners
+  <span class="pl-v"><span class="pl-v">TodoCreatedEvent:</span></span> [
+    TodoCreatedEventListenerToUpdateDB
+    TodoCreatedEventListenerToLogStuff
+  ]
+  <span class="pl-v"><span class="pl-v">TodoCompletedEvent:</span></span> [
+    <span class="pl-smi">(event)</span> <span class="pl-k">-&gt;</span>
+      <span class="pl-c"># More stuff to be done</span>
+  ]</pre></div>
+
+<h3>
+<a id="it-candoesnt-have-to-all-come-together-like-so" class="anchor" href="#it-candoesnt-have-to-all-come-together-like-so" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>It <em>can</em>(doesn't have to) all come together like so...</h3>
+
+<div class="highlight highlight-source-coffee"><pre><span class="pl-v"><span class="pl-v">TodoFlow <span class="pl-k">=</span></span></span> Eventuality.Flow
+  <span class="pl-v"><span class="pl-v">eventStore:</span></span> TodoEventStore
+  <span class="pl-v"><span class="pl-v">eventBus:</span></span> TodoEventBus
+  <span class="pl-v"><span class="pl-v">commandHandlers:</span></span> TodoCommandHandlers
+
+<span class="pl-c">## Later when the user wants to do things...</span>
+TodoFlow.<span class="pl-en">dispatch </span>TodoCommands.<span class="pl-en">CreateTodo </span><span class="pl-v"><span class="pl-v">id:</span></span> <span class="pl-s"><span class="pl-pds">'</span>todo1<span class="pl-pds">'</span></span>, <span class="pl-v"><span class="pl-v">description:</span></span> <span class="pl-s"><span class="pl-pds">'</span>Create a todo<span class="pl-pds">'</span></span>
+TodoFlow.<span class="pl-en">dispatch </span>TodoCommands.<span class="pl-en">MarkAsCompleted </span><span class="pl-v"><span class="pl-v">id:</span></span> <span class="pl-s"><span class="pl-pds">'</span>todo1<span class="pl-pds">'</span></span></pre></div>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/akonwi/eventuality/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/akonwi/eventuality/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/akonwi/eventuality"></a> is maintained by <a href="https://github.com/akonwi">akonwi</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
