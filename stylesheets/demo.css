@@ -1,0 +1,25 @@
+h2, h5 {
+  text-align: center;
+}
+
+#main {
+  display: flex;
+}
+
+#controls {
+  flex-basis: 90%;
+}
+
+#events {
+  flex-basis: 10%;
+}
+
+.event {
+  border: 1px solid blue;
+  margin-bottom: 1rem;
+  padding: 0 1rem
+}
+
+.event p {
+  margin: 1px;
+}

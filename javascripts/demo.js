@@ -82,11 +82,12 @@ var DepositCommandHandler = function(command) {
 
 var logEvent = function(event) {
   var div = document.createElement('div')
-  var h5 = document.createElement('h5')
-  h5.textContent = event.name
+  div.classList.add('event')
+  var p = document.createElement('p')
+  p.textContent = event.name
   var span = document.createElement('span')
   span.textContent = `amount: ${event.payload.amount}`
-  div.appendChild(h5)
+  div.appendChild(p)
   div.appendChild(span)
   eventStack.appendChild(div)
 }
