@@ -1,9 +1,16 @@
+body {
+  height: 400px;
+}
+
 h2, h5 {
   text-align: center;
 }
 
 #main {
   display: flex;
+  height: inherit;
+  border: 1px solid;
+  padding: 5px;
 }
 
 #controls {
@@ -12,6 +19,8 @@ h2, h5 {
 
 #events {
   flex-basis: 10%;
+  overflow-y: scroll;
+  height: inherit;
 }
 
 .event {
