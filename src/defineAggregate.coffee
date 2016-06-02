@@ -1,3 +1,5 @@
+assign = require './deepAssign'
+
 module.exports = ({name, idGenerator, state, methods}={name: 'Aggregate'}) ->
   (attrs) ->
     instanceId = null
@@ -9,7 +11,7 @@ module.exports = ({name, idGenerator, state, methods}={name: 'Aggregate'}) ->
         delete attrs.id
     else
       instanceId = attrs.id ? idGenerator()
-    instanceState = Object.assign {}, state, attrs
+    instanceState = assign {}, state, attrs
     aggregate = Object.defineProperty {}, 'state', value: instanceState
     for name, fn of methods
       Object.defineProperty aggregate, name, value: fn

@@ -1,14 +1,19 @@
 isObject = require 'is-plain-obj'
 
-module.exports = deepAssign = (target, source) ->
-  if not source?
+isArray = (object) -> '[object Array]' is Object.prototype.toString.call(object) ? true : false
+
+module.exports = deepAssign = (target, sources...) ->
+  if sources.length is 0
     target
   else
-    Object.keys(source).forEach (key) ->
-      value = source[key]
-      if isObject(value)
-        target[key] = {}
-        deepAssign target[key], value
-      else
-        target[key] = value
+    sources.forEach (source) ->
+      Object.keys(source).forEach (key) ->
+        value = source[key]
+        if isObject(value)
+          target[key] = {}
+          deepAssign target[key], value
+        else if isArray(value)
+          target[key] = value.slice()
+        else
+          target[key] = value
     target

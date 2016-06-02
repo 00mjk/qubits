@@ -18,7 +18,7 @@ test "Flow will correctly map dispatched commands to their handlers", (t) ->
 
   Commands =
     Add: -> name: 'Add', message: commandArgs
-  AddedEvent = Event aggregateId: 'foo', name: 'AddedEvent', payload: commandArgs
+  AddedEvent = Event aggregateId: 'foo', name: 'AddedEvent', payload: commandArgs, state: {}
   Handlers =
     Add: (args)->
       t.equal args, commandArgs, "command handler was invoked with command arguments"
@@ -31,7 +31,7 @@ test "Flow will correctly map dispatched commands to their handlers", (t) ->
 test "Flow puts newly created events from command handlers into the EventStore and EventBus", (t) ->
   t.plan 2
 
-  AddedEvent = Event aggregateId: 'foo', name: 'AddedEvent', payload: {}
+  AddedEvent = Event aggregateId: 'foo', name: 'AddedEvent', payload: {}, state: {}
   EventStore = add: (event) -> t.equal event, AddedEvent, "EventStore::add was called with the event"
   EventBus = publish: (event) -> t.equal event, AddedEvent, "EventBus::publish was called with the event"
 

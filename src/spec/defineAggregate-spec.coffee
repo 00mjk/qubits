@@ -43,3 +43,20 @@ test "Factory function uses the passed in id even if an id function has already 
   agg = Aggregate({id: 'foo2'})
   t.is agg.id, 'foo2', "created object has the passed in id"
   t.end()
+
+test "Factory function state is immutable", (t) ->
+  t.plan 2
+
+  Aggregate = defineAggregate
+    idGenerator: -> 'foo1'
+    state:
+      array: []
+    methods:
+      pushToArray: ->
+        @state.array.push 1
+        t.is @state.array.length, 1
+
+  agg1 = Aggregate({id: 'foo1'})
+  agg1.pushToArray()
+  agg2 = Aggregate({id: 'foo2'})
+  agg2.pushToArray()
