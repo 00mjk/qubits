@@ -3,7 +3,7 @@
   "author": "akonwi",
   "version": "0.3.0",
   "description": "Some components for cqrs",
-  "repository": "akonwi/eventuality",
+  "repository": "https://github.com/akonwi/eventuality",
   "main": "build/index.js",
   "devDependencies": {
     "coffeetape": "^1.0.1",
