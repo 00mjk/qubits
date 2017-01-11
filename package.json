@@ -1,9 +1,9 @@
 {
-  "name": "eventuality",
+  "name": "qubits",
   "author": "akonwi",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Some components for cqrs",
-  "repository": "https://github.com/akonwi/eventuality",
+  "repository": "https://github.com/akonwi/qubits",
   "main": "build/index.js",
   "devDependencies": {
     "coffeetape": "^1.0.1",
