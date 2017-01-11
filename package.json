@@ -1,10 +1,10 @@
 {
   "name": "qubits",
   "author": "akonwi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Some components for cqrs",
   "repository": "https://github.com/akonwi/qubits",
-  "main": "build/index.js",
+  "main": "src/index.coffee",
   "devDependencies": {
     "coffeetape": "^1.0.1",
     "is-plain-obj": "^1.1.0",
