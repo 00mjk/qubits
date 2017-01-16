@@ -1,8 +1,6 @@
 doAtSomePoint = (cb) -> setTimeout(cb, 0)
 
-module.exports = ->
-  listeners = {}
-
+module.exports = (listeners={}) ->
   registerListener = (eventName, listener) ->
     listenersForEvent = listeners[eventName]
     if listenersForEvent is undefined

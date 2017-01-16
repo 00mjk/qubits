@@ -1,7 +1,7 @@
 {
   "name": "qubits",
   "author": "akonwi",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Some components for cqrs",
   "repository": "https://github.com/akonwi/qubits",
   "main": "build/index.js",

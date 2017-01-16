@@ -10,6 +10,23 @@ test "Core methods of EventBus cannot be changed", (t) ->
   t.false bus.publish is 'foo'
   t.end()
 
+test "Listeners can be registered through the factory method", (t) ->
+  t.plan 2
+  t.timeoutAfter 20000
+
+  FooEvent = name: 'FooEvent'
+
+  bus = EventBus({
+    FooEvent: [
+      (event) -> t.equals event, FooEvent
+      (event) ->
+        t.equals event, FooEvent
+        t.end()
+    ]
+  })
+
+  bus.publish FooEvent
+
 test "Listeners can be registered all at once", (t) ->
   t.plan 2
   t.timeoutAfter 20000

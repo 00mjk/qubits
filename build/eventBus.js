@@ -6,9 +6,11 @@
     return setTimeout(cb, 0);
   };
 
-  module.exports = function() {
-    var listeners, properties, registerListener, registerListeners;
-    listeners = {};
+  module.exports = function(listeners) {
+    var properties, registerListener, registerListeners;
+    if (listeners == null) {
+      listeners = {};
+    }
     registerListener = function(eventName, listener) {
       var listenersForEvent;
       listenersForEvent = listeners[eventName];
