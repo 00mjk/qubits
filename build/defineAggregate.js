@@ -5,12 +5,13 @@
   assign = require('./deepAssign');
 
   module.exports = function(arg) {
-    var idGenerator, methods, name, ref, state;
-    ref = arg != null ? arg : {
-      name: 'Aggregate'
-    }, name = ref.name, idGenerator = ref.idGenerator, state = ref.state, methods = ref.methods;
-    return function(attrs) {
-      var aggregate, fn, instanceId, instanceState, ref1;
+    var factory, idGenerator, methods, name, state;
+    name = arg.name, idGenerator = arg.idGenerator, state = arg.state, methods = arg.methods;
+    if (name == null) {
+      name = 'Aggregate';
+    }
+    factory = function(attrs) {
+      var aggregate, fn, instanceId, instanceState, ref;
       instanceId = null;
       if ((idGenerator != null) === false) {
         if (!!attrs.id === false) {
@@ -20,7 +21,7 @@
           delete attrs.id;
         }
       } else {
-        instanceId = (ref1 = attrs.id) != null ? ref1 : idGenerator();
+        instanceId = (ref = attrs.id) != null ? ref : idGenerator();
       }
       instanceState = assign({}, state, attrs);
       aggregate = Object.defineProperty({}, 'state', {
@@ -36,6 +37,8 @@
         value: instanceId
       });
     };
+    factory.__aggregate_name__ = name.trim();
+    return factory;
   };
 
 }).call(this);

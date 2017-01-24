@@ -6,9 +6,14 @@
 
   assign = require('./deepAssign');
 
-  module.exports = function(aggregateName, Aggregate, eventStore) {
+  module.exports = function(Aggregate, eventStore, aggregateName) {
     var _load, add, cache, load, properties, remove;
-    aggregateName = aggregateName.trim();
+    if (aggregateName == null) {
+      aggregateName = void 0;
+    }
+    if (aggregateName == null) {
+      aggregateName = Aggregate.__aggregate_name__;
+    }
     cache = {};
     _load = function(aggregateId, events) {
       var loaded;

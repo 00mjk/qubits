@@ -10,6 +10,7 @@ test "defineAggregate takes an object with name, idGenerator, state, and methods
     methods:
       foo: -> @id
 
+  t.is SomeAggregate.__aggregate_name__, 'SomeAggregate'
   t.true typeof SomeAggregate is 'function', "result of defineAggregate is a function"
 
   agg = SomeAggregate name: 'foo'

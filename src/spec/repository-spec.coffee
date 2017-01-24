@@ -11,9 +11,10 @@ Foo = (state) ->
     state: newState
     id: id
   }
+Foo.__aggregate_name__ = 'Foo'
 
 test "Core methods of Repository cannot be changed", (t) ->
-  repository = Repository('')
+  repository = Repository(Foo, {})
   repository.add = 'foo'
   repository.load = 'foo'
 
@@ -32,7 +33,7 @@ test "Repository::add creates an aggregate from passed attributes and returns th
     add: new Function()
     getEvents: -> []
 
-  repository = Repository('Foo', Foo, store)
+  repository = Repository(Foo, store)
 
   result = repository.add id: 'foo1'
 
@@ -46,7 +47,7 @@ test "Repository::load with an existing id resolves to the aggregate", (t) ->
     add: new Function()
     getEvents: -> []
 
-  repository = Repository('Foo', Foo, store)
+  repository = Repository(Foo, store)
 
   {aggregateId} = repository.add id: 'foo1'
 
@@ -60,7 +61,7 @@ test "Repository::load with a non-existent id resolves to null", (t) ->
     add: new Function()
     getEvents: -> []
 
-  repository = Repository('Foo', Foo, store)
+  repository = Repository(Foo, store)
 
   repository.load('foo1').then (aggregate) ->
     t.equal aggregate, null
@@ -87,7 +88,7 @@ test "Repository::load with an existing id that is not already cached returns a 
     add: new Function()
     getEvents: -> [createdEvent, anotherEvent]
 
-  repository = Repository('Foo', Foo, store)
+  repository = Repository(Foo, store)
   repository.load('foo1').then (aggregate) ->
     t.deepEquals aggregate, Foo(id: 'foo1', name: anotherEvent.payload.name)
 
@@ -105,7 +106,7 @@ test "Repository::delete resolves to an event", (t) ->
     payload: {}
     state: {}
   )
-  repository = Repository('Foo', Foo, store)
+  repository = Repository(Foo, store)
 
   createdEvent = repository.add id: 'foo1'
   store.add(createdEvent)
@@ -119,7 +120,7 @@ test "After Repository::delete an aggregate is no longer accessible", (t) ->
     add: new Function()
     getEvents: -> []
 
-  repository = Repository('Foo', Foo, store)
+  repository = Repository(Foo, store)
 
   {aggregateId} = repository.add id: 'foo1'
 
@@ -127,3 +128,21 @@ test "After Repository::delete an aggregate is no longer accessible", (t) ->
   .then (event) -> repository.load('foo1')
   .then (aggregate) ->
     t.equal aggregate, null, "the promise resolved to null"
+
+test "Repository function accepts an optional third argument for aggregate name", (t) ->
+  createdEvent =
+    name: 'UberFooCreatedEvent'
+    aggregateId: 'foo1'
+    payload:
+      id: 'foo1'
+    state: {}
+  store =
+    add: new Function()
+    getEvents: -> []
+
+  repository = Repository(Foo, store, 'UberFoo')
+
+  result = repository.add id: 'foo1'
+
+  t.deepEquals result, createdEvent, "event published is as expected"
+  t.end()

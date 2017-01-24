@@ -1,8 +1,8 @@
 Event = require('./event')
 assign = require './deepAssign'
 
-module.exports = (aggregateName, Aggregate, eventStore) ->
-  aggregateName = aggregateName.trim()
+module.exports = (Aggregate, eventStore, aggregateName=undefined) ->
+  aggregateName ?= Aggregate.__aggregate_name__
   cache = {}
 
   _load =  (aggregateId, events) ->
