@@ -9,9 +9,7 @@ module.exports = (Aggregate, eventStore, aggregateName=undefined) ->
     loaded = null
     events.reverse().some (event) ->
       if event.aggregateId is aggregateId
-        if (event.name is "#{aggregateName}DeletedEvent")
-          loaded = null
-        else
+        if event.name isnt "#{aggregateName}DeletedEvent"
           agg = Aggregate(assign(id: aggregateId, event.state))
           cache[aggregateId] = agg
           loaded = agg
