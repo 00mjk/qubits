@@ -54,7 +54,7 @@ test "Repository::load with an existing id resolves to the aggregate", (t) ->
   repository.load('foo1').then (aggreate) ->
     t.equals aggreate.id, aggregateId
 
-test "Repository::load with a non-existent id resolves to null", (t) ->
+test "Repository::load with a non-existent id returns a promise that will be rejected", (t) ->
   t.plan 1
 
   store =
@@ -63,8 +63,7 @@ test "Repository::load with a non-existent id resolves to null", (t) ->
 
   repository = Repository(Foo, store)
 
-  repository.load('foo1').then (aggregate) ->
-    t.equal aggregate, null
+  repository.load('foo1').catch -> t.pass()
 
 test "Repository::load with an existing id that is not already cached returns a recreated instance of most recent state", (t) ->
   t.plan 1
@@ -89,7 +88,8 @@ test "Repository::load with an existing id that is not already cached returns a 
     getEvents: -> [createdEvent, anotherEvent]
 
   repository = Repository(Foo, store)
-  repository.load('foo1').then (aggregate) ->
+  repository.load('foo1')
+  .then (aggregate) ->
     t.deepEquals aggregate, Foo(id: 'foo1', name: anotherEvent.payload.name)
 
 test "Repository::delete resolves to an event", (t) ->
@@ -126,8 +126,7 @@ test "After Repository::delete an aggregate is no longer accessible", (t) ->
 
   repository.delete(aggregateId)
   .then (event) -> repository.load('foo1')
-  .then (aggregate) ->
-    t.equal aggregate, null, "the promise resolved to null"
+  .catch -> t.pass()
 
 test "Repository function accepts an optional third argument for aggregate name", (t) ->
   createdEvent =

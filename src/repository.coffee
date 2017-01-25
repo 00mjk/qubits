@@ -26,7 +26,11 @@ module.exports = (Aggregate, eventStore, aggregateName=undefined) ->
     if agg = cache[aggregateId]
       Promise.resolve agg
     else
-      Promise.resolve(eventStore.getEvents()).then (events) -> _load aggregateId, events
+      new Promise (resolve, reject) ->
+        Promise.resolve(eventStore.getEvents()).then (events) ->
+          if aggregate = _load aggregateId, events
+            resolve(aggregate)
+          else reject()
 
   remove = (aggregateId) ->
     load(aggregateId).then (agg) ->
