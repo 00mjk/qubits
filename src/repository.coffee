@@ -6,15 +6,16 @@ module.exports = (Aggregate, eventStore, aggregateName=undefined) ->
   cache = {}
 
   _load =  (aggregateId, events) ->
-    loaded = null
-    events.reverse().some (event) ->
-      if event.aggregateId is aggregateId
-        if event.name isnt "#{aggregateName}DeletedEvent"
-          agg = Aggregate(assign(id: aggregateId, event.state))
-          cache[aggregateId] = agg
-          loaded = agg
-        return true
-    loaded
+    relevantEvents = events.filter((event) -> event.aggregateId is aggregateId)
+    if relevantEvents.length is 0 or relevantEvents.find(({name}) -> name is "#{aggregateName}DeletedEvent")
+      return null
+    else
+      createdEvent = relevantEvents.splice(0, 1)[0]
+      agg = Aggregate(assign(id: aggregateId, createdEvent.payload))
+      relevantEvents.forEach (event) ->
+        Aggregate.__sourcing_methods__[event.name](event.payload, agg)
+      cache[aggregateId] = agg
+      return agg
 
   add = (attrs) ->
     agg = Aggregate(assign({}, attrs))

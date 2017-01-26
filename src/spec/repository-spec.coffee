@@ -12,6 +12,10 @@ Foo = (state) ->
     id: id
   }
 Foo.__aggregate_name__ = 'Foo'
+Foo.__sourcing_methods__ = {
+  SomeOtherEvent: (payload, foo) -> foo.state.name = payload.name
+  AnotherEvent: (payload, foo) -> foo.state.name = payload.name
+}
 
 test "Core methods of Repository cannot be changed", (t) ->
   repository = Repository(Foo, {})
@@ -75,6 +79,13 @@ test "Repository::load with an existing id that is not already cached returns a 
       name: 'something'
     state:
       name: 'something'
+  someOtherEvent =
+    name: 'SomeOtherEvent'
+    aggregateId: 'foo1'
+    payload:
+      name: 'something else'
+    state:
+      name: 'something else'
   anotherEvent =
     name: 'AnotherEvent'
     aggregateId: 'foo1'
@@ -85,11 +96,12 @@ test "Repository::load with an existing id that is not already cached returns a 
 
   store =
     add: new Function()
-    getEvents: -> [createdEvent, anotherEvent]
+    getEvents: -> [createdEvent, someOtherEvent, anotherEvent]
 
   repository = Repository(Foo, store)
   repository.load('foo1')
   .then (aggregate) ->
+    t.comment 'fooooo'
     t.deepEquals aggregate, Foo(id: 'foo1', name: anotherEvent.payload.name)
 
 test "Repository::delete resolves to an event", (t) ->

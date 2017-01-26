@@ -5,8 +5,8 @@
   assign = require('./deepAssign');
 
   module.exports = function(arg) {
-    var factory, idGenerator, methods, name, state;
-    name = arg.name, idGenerator = arg.idGenerator, state = arg.state, methods = arg.methods;
+    var factory, idGenerator, methods, name, sourcing, state;
+    name = arg.name, idGenerator = arg.idGenerator, state = arg.state, methods = arg.methods, sourcing = arg.sourcing;
     if (name == null) {
       name = 'Aggregate';
     }
@@ -38,6 +38,7 @@
       });
     };
     factory.__aggregate_name__ = name.trim();
+    factory.__sourcing_methods__ = assign({}, sourcing);
     return factory;
   };
 

@@ -1,6 +1,6 @@
 assign = require './deepAssign'
 
-module.exports = ({name, idGenerator, state, methods}) ->
+module.exports = ({name, idGenerator, state, methods, sourcing}) ->
   name ?= 'Aggregate'
   factory = (attrs) ->
     instanceId = null
@@ -19,4 +19,5 @@ module.exports = ({name, idGenerator, state, methods}) ->
     Object.defineProperty aggregate, 'id', value: instanceId
 
   factory.__aggregate_name__ = name.trim()
+  factory.__sourcing_methods__ = assign {}, sourcing
   factory

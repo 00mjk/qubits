@@ -16,24 +16,27 @@
     }
     cache = {};
     _load = function(aggregateId, events) {
-      var loaded;
-      loaded = null;
-      events.reverse().some(function(event) {
-        var agg;
-        if (event.aggregateId === aggregateId) {
-          if (event.name === (aggregateName + "DeletedEvent")) {
-            loaded = null;
-          } else {
-            agg = Aggregate(assign({
-              id: aggregateId
-            }, event.state));
-            cache[aggregateId] = agg;
-            loaded = agg;
-          }
-          return true;
-        }
+      var agg, createdEvent, relevantEvents;
+      relevantEvents = events.filter(function(event) {
+        return event.aggregateId === aggregateId;
       });
-      return loaded;
+      if (relevantEvents.length === 0 || relevantEvents.find(function(arg) {
+        var name;
+        name = arg.name;
+        return name === (aggregateName + "DeletedEvent");
+      })) {
+        return null;
+      } else {
+        createdEvent = relevantEvents.splice(0, 1)[0];
+        agg = Aggregate(assign({
+          id: aggregateId
+        }, createdEvent.payload));
+        relevantEvents.forEach(function(event) {
+          return Aggregate.__sourcing_methods__[event.name](event.payload, agg);
+        });
+        cache[aggregateId] = agg;
+        return agg;
+      }
     };
     add = function(attrs) {
       var agg, state;
@@ -52,8 +55,15 @@
       if (agg = cache[aggregateId]) {
         return Promise.resolve(agg);
       } else {
-        return Promise.resolve(eventStore.getEvents()).then(function(events) {
-          return _load(aggregateId, events);
+        return new Promise(function(resolve, reject) {
+          return Promise.resolve(eventStore.getEvents()).then(function(events) {
+            var aggregate;
+            if (aggregate = _load(aggregateId, events)) {
+              return resolve(aggregate);
+            } else {
+              return reject();
+            }
+          });
         });
       }
     };
