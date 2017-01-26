@@ -11,20 +11,20 @@ module.exports = (Aggregate, eventStore, aggregateName=undefined) ->
       return null
     else
       createdEvent = relevantEvents.splice(0, 1)[0]
-      agg = Aggregate(assign(id: aggregateId, createdEvent.payload))
+      aggregate = Aggregate(assign(id: aggregateId, createdEvent.payload))
       relevantEvents.forEach (event) ->
-        Aggregate.__sourcing_methods__[event.name](event.payload, agg)
-      cache[aggregateId] = agg
-      return agg
+        Aggregate.__sourcing_methods__[event.name](event.payload, aggregate)
+      cache[aggregateId] = aggregate
+      return aggregate
 
   add = (attrs) ->
-    agg = Aggregate(assign({}, attrs))
-    cache[agg.id] = agg
-    Event(name: "#{aggregateName}CreatedEvent", aggregateId: agg.id, payload: attrs)
+    aggregate = Aggregate(assign({}, attrs))
+    cache[aggregate.id] = aggregate
+    Event(name: "#{aggregateName}CreatedEvent", aggregateId: aggregate.id, payload: attrs)
 
   load = (aggregateId) ->
-    if agg = cache[aggregateId]
-      Promise.resolve agg
+    if aggregate = cache[aggregateId]
+      Promise.resolve aggregate
     else
       new Promise (resolve, reject) ->
         Promise.resolve(eventStore.getEvents()).then (events) ->
@@ -33,7 +33,7 @@ module.exports = (Aggregate, eventStore, aggregateName=undefined) ->
           else reject()
 
   remove = (aggregateId) ->
-    load(aggregateId).then (agg) ->
+    load(aggregateId).then (aggregate) ->
       delete cache[aggregateId]
       Promise.resolve(Event(name: "#{aggregateName}DeletedEvent", aggregateId: aggregateId, payload: {}))
 
