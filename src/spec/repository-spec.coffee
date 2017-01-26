@@ -32,7 +32,6 @@ test "Repository::add creates an aggregate from passed attributes and returns th
     aggregateId: 'foo1'
     payload:
       id: 'foo1'
-    state: {}
   store =
     add: new Function()
     getEvents: -> []
@@ -112,12 +111,10 @@ test "Repository::delete resolves to an event", (t) ->
     add: (event) -> events.push event
     getEvents: -> events
 
-  deletedEvent = Event(
+  deletedEvent = Event
     name: 'FooDeletedEvent'
     aggregateId: 'foo1'
     payload: {}
-    state: {}
-  )
   repository = Repository(Foo, store)
 
   createdEvent = repository.add id: 'foo1'
@@ -146,7 +143,6 @@ test "Repository function accepts an optional third argument for aggregate name"
     aggregateId: 'foo1'
     payload:
       id: 'foo1'
-    state: {}
   store =
     add: new Function()
     getEvents: -> []

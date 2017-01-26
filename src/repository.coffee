@@ -20,8 +20,7 @@ module.exports = (Aggregate, eventStore, aggregateName=undefined) ->
   add = (attrs) ->
     agg = Aggregate(assign({}, attrs))
     cache[agg.id] = agg
-    state = assign({}, agg.state)
-    Event(name: "#{aggregateName}CreatedEvent", aggregateId: agg.id, state: state, payload: attrs)
+    Event(name: "#{aggregateName}CreatedEvent", aggregateId: agg.id, payload: attrs)
 
   load = (aggregateId) ->
     if agg = cache[aggregateId]
@@ -35,10 +34,8 @@ module.exports = (Aggregate, eventStore, aggregateName=undefined) ->
 
   remove = (aggregateId) ->
     load(aggregateId).then (agg) ->
-      if not agg.state?
-        Promise.reject "Could not load aggregate with id of #{aggregateId}"
       delete cache[aggregateId]
-      Promise.resolve(Event(name: "#{aggregateName}DeletedEvent", aggregateId: aggregateId, state: agg.state, payload: {}))
+      Promise.resolve(Event(name: "#{aggregateName}DeletedEvent", aggregateId: aggregateId, payload: {}))
 
   properties =
     add:
