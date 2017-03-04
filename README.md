@@ -1,99 +1,119 @@
-# Eventuality
-This is simply a POC and my way of writing down my thoughts about how I would want to implement a CQRS system. The focus here is on components/tools and functions that can be interchanged rather than a full framework.
+# Qubits
+This was originally a simple POC and a way for me to write down my thoughts about how I would want to implement an eventsourced CQRS system. The focus here is on components/tools and functions that can be interchanged rather than a full framework.
 
 ## components
   * Domain Model (Aggregate)
-    > This is the object that represents the state of our model. Only it can change its own state as a result of Commands. Each state change results in an Event.
+    > This is the object that represents the state of our model. It is responsible for changing its own state as a result of Commands. Each state change results in an Event.
+
+  * Events  
+    > Objects representing a fact of state change in the domain model.
 
   * EventStore
-    > A storage facility for events/history/facts. This can be in memory or backed by a database. What I have here is in memory.
+    > A storage facility for events/history/facts. This can be in memory or backed by a database.
 
   * EventBus
     > The medium through which facts of state change are shared to interested observers.
 
   * EventListeners
-    > These are the observers of facts of state changes. They are functions to be invoked when the domain model has changed its state.
+    > These are the observers of facts of state changes. They are functions to be invoked when the Aggregate has changed its state.
 
   * Repository
-    > A component through which we create and access the domain model.
+    > A component through which we create and access the domain model. It's an in-memory collection of Aggregates.
 
   * Commands
-    > Objects representing an intent of state change by the user on the domain model.
+    > Objects representing an intent of state change by the user on the Aggregate.
 
   * CommandHandlers
-    > Functions with the purpose of communicating the intended state change to the domain model.  
+    > Functions with the purpose of communicating the intended state change to the Aggregate.  
 
-  * Events  
-    > Objects representing a fact of state change in the domain model.
+Based on these definitions of the components and given CommandHandlers (CH) and actions the Aggregate can do (A), the system should work like this:
 
-Based on these definitions of the components, the system should work like this:
-
-  > CommandHandlers are effectively `CH(Command) -> [...Event]`
-
-  >Actions the domain model can execute are `A() -> [...Event]`
+  > `CH(Command) -> A() -> [...Event]`
 
 This means every intention to change the state of the domain model results in *n* events (where n = 0 is a failure and n > 0 is success).
 
 ## Examples of usage
-Of course, I'll use a Todo application because that's the app any system can build.
+Of course, I'll use a Todo application to demonstrate how this works.
 
-``` coffeescript
-Eventuality = require 'eventuality'
+``` javascript
+const {defineAggregate, Event, EventStore, Repository, EventBus} = require('qubits')
 
-Todo = Eventuality.defineAggregate
-  name: 'Todo'
-  state:
-    description: null
+const Todo = defineAggregate({
+  name: 'Todo',
+  state: {
+    description: null,
     completed: false
-  methods:
-    complete: ->
-      @state.completed = true
-      Eventuality.Event(aggregateId: @id, name: 'TodoCompletedEvent', payload: {completed: true}, state: @state)
+  },
+  methods: {
+    complete: () => {
+      this.state.completed = true
+      return Event({
+        aggregateId: this.id,
+        name: 'TodoCompletedEvent',
+        payload: {completed: true}
+      })
+    }
+  }
+})
 
-TodoCommands =
-  CreateTodo: ({id, description }) -> name: 'CreateTodo', message: {id, description}
-  MarkAsCompleted: ({ id }) -> name: 'MarkAsCompleted', message: {id}
+// Create commands to represent intent to change state.
+// These are just factory functions
+const TodoCommands = {
+  CreateTodo: ({id, description }) => {
+    return {name: 'CreateTodo', message: {id, description}},
+  },
+  MarkAsCompleted: ({id}) => {
+    return {name: 'MarkAsCompleted', message: {id}}
+  }
+}
 
-TodoEventStore = Eventuality.EventStore()
-# If you want to persist events somewhere else
-#
-# TodoEventStore = Eventuality.EventStore({
-#   add: (event) -> # put it somewhere
-#   getEvents: -> # return an array of events
-# })
+const TodoEventStore = EventStore()
+// If you want to persist events somewhere else like a database,
+// it's easy to override how the event store works.
+//
+// const TodoEventStore = EventStore({
+//  add: event => // put it somewhere
+//  getEvents: => // return an array (or Promise of an array) of events
+// })
 
-TodoRepository = Eventuality.Repository 'Todo', Todo, TodoEventStore
+const TodoRepository = Repository(Todo, TodoEventStore)
 
-TodoCommandHandlers =
-  CreateTodo: (attrs) -> TodoRepository.add attrs
-  MarkAsCompleted: ({ id }) ->
-    todo = TodoRepository.load id
-    todo.complete()
+const TodoCommandHandlers = {
+  CreateTodo: attrs => {
+    return TodoRepository.add(attrs)
+  },
+  MarkAsCompleted: ({ id }) => {
+    const todo = TodoRepository.load(id)
+    return todo.complete()
+  }
+}
 
-TodoEventBus = Eventuality.EventBus()
+const TodoEventBus = EventBus()
 
-TodoCreatedEventListenerToUpdateDB = (event) -> # Update database...
-TodoCreatedEventListenerToLogStuff = (event) -> # Do some logging...
+// These are event listeners. They are plain functions with side effects.
+// They don't need to return anything because they are simply observers
+const TodoCreatedEventListenerToUpdateDB = event => // Update database...
+const TodoCreatedEventListenerToLogStuff = event => // Do some logging...
+const TodoCompletedEventListenerToSendNotification = event => // whatever...
 
-TodoEventBus.registerListeners
+TodoEventBus.registerListeners({
   TodoCreatedEvent: [
-    TodoCreatedEventListenerToUpdateDB
+    TodoCreatedEventListenerToUpdateDB,
     TodoCreatedEventListenerToLogStuff
-  ]
-  TodoCompletedEvent: [
-    (event) ->
-      # More stuff to be done
-  ]
+  ],
+  TodoCompletedEvent: [TodoCompletedEventListenerToSendNotification]
+})
 ```
 
-### It _can_(doesn't have to) all come together like so...
-``` coffeescript
-TodoFlow = Eventuality.Flow
-  eventStore: TodoEventStore
-  eventBus: TodoEventBus
+### It _can_(but doesn't have to) all come together like so...
+``` javascript
+const TodoFlow = Qubits.Flow({
+  eventStore: TodoEventStore,
+  eventBus: TodoEventBus,
   commandHandlers: TodoCommandHandlers
+})
 
-## Later when the user wants to do things...
-TodoFlow.dispatch TodoCommands.CreateTodo id: 'todo1', description: 'Create a todo'
-TodoFlow.dispatch TodoCommands.MarkAsCompleted id: 'todo1'
+// Later when the user wants to do things...
+TodoFlow.dispatch(TodoCommands.CreateTodo({id: 'todo1', description: 'Create a todo'}))
+TodoFlow.dispatch(TodoCommands.MarkAsCompleted({id: 'todo1'}))
 ```
