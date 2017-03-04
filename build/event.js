@@ -5,13 +5,12 @@
   deepAssign = require('./deepAssign');
 
   module.exports = function(arg) {
-    var aggregateId, event, name, payload, state;
-    aggregateId = arg.aggregateId, name = arg.name, payload = arg.payload, state = arg.state;
+    var aggregateId, event, name, payload;
+    aggregateId = arg.aggregateId, name = arg.name, payload = arg.payload;
     event = {
       name: name,
       aggregateId: aggregateId,
-      payload: Object.freeze(deepAssign({}, payload)),
-      state: Object.freeze(deepAssign({}, state))
+      payload: Object.freeze(deepAssign({}, payload))
     };
     return Object.freeze(event);
   };

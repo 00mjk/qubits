@@ -16,7 +16,7 @@
     }
     cache = {};
     _load = function(aggregateId, events) {
-      var agg, createdEvent, relevantEvents;
+      var aggregate, createdEvent, relevantEvents;
       relevantEvents = events.filter(function(event) {
         return event.aggregateId === aggregateId;
       });
@@ -28,36 +28,33 @@
         return null;
       } else {
         createdEvent = relevantEvents.splice(0, 1)[0];
-        agg = Aggregate(assign({
+        aggregate = Aggregate(assign({
           id: aggregateId
         }, createdEvent.payload));
         relevantEvents.forEach(function(event) {
-          return Aggregate.__sourcing_methods__[event.name](event.payload, agg);
+          return Aggregate.__sourcing_methods__[event.name](event.payload, aggregate);
         });
-        cache[aggregateId] = agg;
-        return agg;
+        cache[aggregateId] = aggregate;
+        return aggregate;
       }
     };
     add = function(attrs) {
-      var agg, state;
-      agg = Aggregate(assign({}, attrs));
-      cache[agg.id] = agg;
-      state = assign({}, agg.state);
+      var aggregate;
+      aggregate = Aggregate(assign({}, attrs));
+      cache[aggregate.id] = aggregate;
       return Event({
         name: aggregateName + "CreatedEvent",
-        aggregateId: agg.id,
-        state: state,
+        aggregateId: aggregate.id,
         payload: attrs
       });
     };
     load = function(aggregateId) {
-      var agg;
-      if (agg = cache[aggregateId]) {
-        return Promise.resolve(agg);
+      var aggregate;
+      if (aggregate = cache[aggregateId]) {
+        return Promise.resolve(aggregate);
       } else {
         return new Promise(function(resolve, reject) {
           return Promise.resolve(eventStore.getEvents()).then(function(events) {
-            var aggregate;
             if (aggregate = _load(aggregateId, events)) {
               return resolve(aggregate);
             } else {
@@ -68,15 +65,11 @@
       }
     };
     remove = function(aggregateId) {
-      return load(aggregateId).then(function(agg) {
-        if (agg.state == null) {
-          Promise.reject("Could not load aggregate with id of " + aggregateId);
-        }
+      return load(aggregateId).then(function(aggregate) {
         delete cache[aggregateId];
         return Promise.resolve(Event({
           name: aggregateName + "DeletedEvent",
           aggregateId: aggregateId,
-          state: agg.state,
           payload: {}
         }));
       });
